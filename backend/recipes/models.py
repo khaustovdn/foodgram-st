@@ -1,6 +1,7 @@
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 from ingredients.models import Ingredient
 from users.models import PlatformUser
@@ -80,6 +81,8 @@ class Recipe(models.Model):
     )
     description = models.TextField(
         _('Описание рецепта'),
+        blank=True,
+        null=True,
         help_text=_('Подробно опишите процесс приготовления')
     )
     cooking_time = models.PositiveSmallIntegerField(
@@ -107,7 +110,8 @@ class Recipe(models.Model):
         PlatformUser,
         on_delete=models.CASCADE,
         related_name='authored_recipes',
-        verbose_name=_('Автор рецепта')
+        verbose_name=_('Автор рецепта'),
+        default=1
     )
     categories = models.ManyToManyField(
         RecipeCategory,
@@ -117,7 +121,7 @@ class Recipe(models.Model):
     )
     created_at = models.DateTimeField(
         _('Дата создания'),
-        auto_now_add=True
+        default=timezone.now
     )
     updated_at = models.DateTimeField(
         _('Дата обновления'),
@@ -203,7 +207,7 @@ class UserRecipeRelation(models.Model):
     )
     created_at = models.DateTimeField(
         _('Дата создания'),
-        auto_now_add=True
+        default=timezone.now
     )
 
     class Meta:
@@ -217,7 +221,7 @@ class UserRecipeRelation(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.user} - {self.recipe.name}'
+        return f'{self.user.username} - {self.recipe.name}'
 
 
 class FavoriteRecipe(UserRecipeRelation):
