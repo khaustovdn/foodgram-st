@@ -1,21 +1,18 @@
-FROM python:3.10-slim-buster
+# backend/Dockerfile
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV PIP_NO_CACHE_DIR off
+FROM python:3.10
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip install --upgrade pip
+# Install Python dependencies
+RUN pip install gunicorn==20.1.0
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt --no-cache-dir
 
+# Set environment variables
+ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000"
+
+# Run Gunicorn
 COPY . .
-
-RUN chmod +x entrypoint.sh
-ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["gunicorn", "foodgram.wsgi:application"]

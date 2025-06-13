@@ -1,54 +1,78 @@
 # infra/docker-compose.yml
-version: '3.8'
 
+# =========================================================
+# Named Volumes for Persistent Data Storage
+# =========================================================
 volumes:
   postgres_data:
-  static:
-  media:
+  static_volume:
+  media_volume:
+  logs_volume:
 
+# =========================================================
+# Service Definitions
+# =========================================================
 services:
+  # PostgreSQL Database Service
   db:
-    image: postgres:13-alpine
-    env_file:
-      - .env
+    image: postgres:17.5
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
+  # Django Application Service
   backend:
-    build: ../backend/foodgram
-    env_file:
-      - .env
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      STATIC_URL: /django_static/
+      DJANGO_SETTINGS_MODULE: foodgram.settings
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${DB_PORT}/${POSTGRES_DB}
+      PYTHONUNBUFFERED: 1
+      PYTHONPATH: /app
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     volumes:
-      - static:/app/static
-      - media:/app/media
+      - static_volume:${STATIC_ROOT}
+      - media_volume:${MEDIA_ROOT}
 
+  # Frontend Service
   frontend:
-    build: ../frontend
-    env_file:
-      - .env
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    env_file: .env
     volumes:
-      - ../frontend/build:/usr/share/nginx/html/
+      - type: bind
+        source: ../frontend/build
+        target: /usr/share/nginx/html
 
+  # Nginx Reverse Proxy Service
   nginx:
-    build: ./nginx
-    env_file:
-      - .env
+    image: nginx:1.25
+    env_file: .env
     ports:
-      - "80:80"
+      - "8000:80"
     depends_on:
       - backend
       - frontend
     volumes:
-      - static:/app/static
-      - media:/app/media
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_volume:${STATIC_ROOT}
+      - media_volume:${MEDIA_ROOT}
+      - type: bind
+        source: ../frontend/build
+        target: /usr/share/nginx/html
+        read_only: true
+      - type: bind
+        source: ../docs
+        target: /usr/share/nginx/html/api/docs
+        read_only: true
+      - type: bind
+        source: ./nginx/nginx.conf
+        target: /etc/nginx/conf.d/default.conf
