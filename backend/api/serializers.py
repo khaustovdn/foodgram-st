@@ -180,7 +180,7 @@ class CulinaryRecipeCreateUpdateSerializer(serializers.ModelSerializer):
             amount = item.get("amount")
             ingredient_id = item.get("id")
             if not ingredient_id:
-                errors.append(f"Ингредиент #{i+1}: отсутствует ID")
+                errors.append(f"Ингредиент #{i + 1}: отсутствует ID")
             if amount is not None:
                 try:
                     amount = int(amount)
@@ -191,10 +191,10 @@ class CulinaryRecipeCreateUpdateSerializer(serializers.ModelSerializer):
                         )
                 except (TypeError, ValueError):
                     errors.append(
-                        f"Ингредиент #{i+1}: неверный формат количества"
+                        f"Ингредиент #{i + 1}: неверный формат количества"
                     )
             else:
-                errors.append(f"Ингредиент #{i+1}: отсутствует количество")
+                errors.append(f"Ингредиент #{i + 1}: отсутствует количество")
             if ingredient_id:
                 if ingredient_id in seen_ingredients:
                     errors.append(

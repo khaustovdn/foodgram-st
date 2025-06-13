@@ -10,7 +10,7 @@ For the full list of settings and their values, see:
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import os
+import sys, os
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -44,10 +44,10 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "api.apps.ApiConfig",
-    "ingredients.apps.IngredientsConfig",
-    "recipes.apps.RecipesConfig",
-    "users.apps.UsersConfig",
+    "api",
+    "ingredients",
+    "recipes",
+    "users",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -85,16 +85,24 @@ TEMPLATES = [
 ]
 
 # Database settings
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "postgres"),
-        "USER": os.getenv("POSTGRES_USER", "postgres"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", "db"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+if "pytest" in sys.modules or "test" in sys.argv:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB", "postgres"),
+            "USER": os.getenv("POSTGRES_USER", "postgres"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "db"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
+    }
 
 # Password validation settings
 AUTH_PASSWORD_VALIDATORS = [

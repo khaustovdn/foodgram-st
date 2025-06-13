@@ -171,14 +171,13 @@ class IngredientSearchViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """Filter ingredients by search query."""
-        search_term = self.request.query_params.get("name").strip()
+        queryset = CulinaryIngredient.objects.all()
+        search_term = self.request.query_params.get("name")
 
-        if not search_term:
-            return CulinaryIngredient.objects.none()
+        if search_term:
+            queryset = queryset.filter(name__istartswith=search_term)
 
-        return CulinaryIngredient.objects.filter(
-            name__istartswith=search_term
-        ).order_by("name")[:10]
+        return queryset
 
 
 class CulinaryRecipeViewSet(viewsets.ModelViewSet):
