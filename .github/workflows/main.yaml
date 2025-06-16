@@ -32,7 +32,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip 
         pip install ruff==0.8.0
-        pip install -r ./backend/foodgram/requirements.txt
+        pip install -r ./backend/requirements.txt
     - name: Lint with ruff and run django tests
       env:
         POSTGRES_USER: foodgram
@@ -42,8 +42,8 @@ jobs:
         DB_PORT: 5432
         SECRET_KEY: django-insecure-secret
       run: |
-        python -m ruff check backend/foodgram/
-        cd backend/foodgram/
+        python -m ruff check backend/
+        cd backend/
         pytest
 
 
