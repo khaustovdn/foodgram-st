@@ -3,7 +3,7 @@
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.core.validators import MinLengthValidator, RegexValidator
+from django.core.validators import RegexValidator
 
 
 class CulinaryUser(AbstractUser):
@@ -14,7 +14,8 @@ class CulinaryUser(AbstractUser):
         verbose_name = _("Пользователь")
         verbose_name_plural = _("Пользователи")
         constraints = [
-            models.UniqueConstraint(fields=["email"], name="unique_user_email"),
+            models.UniqueConstraint(
+                fields=["email"], name="unique_user_email"),
             models.UniqueConstraint(
                 fields=["username"], name="unique_user_username"
             ),

@@ -10,7 +10,8 @@ For the full list of settings and their values, see:
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import sys, os
+import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
